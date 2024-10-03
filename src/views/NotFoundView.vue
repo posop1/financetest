@@ -13,13 +13,3 @@ setTimeout(() => {
     <h2 class="text-2xl">Страница не найдена 404</h2>
   </section>
 </template>
-
-<style scoped>
-.not__found__container {
-  min-height: 100vh;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-</style>
