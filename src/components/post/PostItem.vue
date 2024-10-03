@@ -16,7 +16,7 @@ const { deletePost } = usePostStore()
   <div class="flex flex-col shadow-2xl p-8 rounded-md gap-5 w-full max-w-screen-lg">
     <div class="flex justify-between items-center">
       <p class="font-bold text-2xl">{{ post.title }}</p>
-      <p class="opacity-50">{{ post.createDate.toLocaleDateString() }}</p>
+      <p class="opacity-50">{{ post.createDate }}</p>
     </div>
     <p class="text-xl">{{ post.description }}</p>
     <div class="self-end flex gap-5">
