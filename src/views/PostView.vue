@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { usePostStore } from '@/stores/post'
 import type { IPost } from '@/types/post'
 import { Button } from '@/components/ui/button'
+import UpdatePostModal from '@/components/post/UpdatePostModal.vue'
 
 const { getPost } = usePostStore()
 const route = useRoute()
+const router = useRouter()
+const { deletePost } = usePostStore()
 
 const post = ref<IPost>()
+
+function redirectAndDeletePost() {
+  if (post.value) {
+    deletePost(post.value.id)
+    router.push('/')
+  }
+}
 
 onMounted(() => {
   post.value = getPost(Number(route.params.postId))
@@ -21,16 +31,23 @@ onMounted(() => {
     <RouterLink to="/">
       <Button>Back</Button>
     </RouterLink>
-    <div>
-      <p class="text-3xl font-bold">{{ post.title }}</p>
-      <p class="opacity-50">{{ post.createDate.toLocaleDateString() }}</p>
+
+    <div class="flex w-full justify-between">
+      <div>
+        <p class="text-3xl font-bold">{{ post.title }}</p>
+        <p class="opacity-50">{{ post.createDate }}</p>
+      </div>
+      <div class="flex gap-5">
+        <UpdatePostModal :post="post" />
+        <Button variant="destructive" @click="redirectAndDeletePost">Delete</Button>
+      </div>
     </div>
     <p class="text-2xl">{{ post.description }}</p>
   </div>
   <div v-else class="w-full flex flex-col gap-6 items-center my-10">
-    <span class="text-3xl">Post Not Found</span>
     <RouterLink to="/">
       <Button>Go Back</Button>
     </RouterLink>
+    <span class="text-3xl">Post Not Found</span>
   </div>
 </template>
