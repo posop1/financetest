@@ -26,18 +26,6 @@ const { updatePost } = usePostStore()
 
 const isOpen = ref(false)
 
-// const title = ref(post.title)
-// const description = ref(post.description)
-
-// function update() {
-//   const updatedPost: IPostBody = {
-//     title: title.value,
-//     description: description.value
-//   }
-
-//   updatePost(updatedPost, post.id)
-// }
-
 const formSchema = toTypedSchema(
   z.object({
     title: z.string().min(1).max(12).default(post.title),
