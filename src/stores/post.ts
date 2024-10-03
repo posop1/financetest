@@ -11,7 +11,7 @@ export const usePostStore = defineStore('post', () => {
       id: posts.value[posts.value.length - 1] ? posts.value[posts.value.length - 1].id + 1 : 1,
       title: post.title,
       description: post.description,
-      createDate: new Date(Date.now())
+      createDate: new Date()
     }
 
     posts.value.push(newPost)
@@ -35,8 +35,6 @@ export const usePostStore = defineStore('post', () => {
   }
 
   function deletePost(postId: number) {
-    console.log('asd')
-
     const postIndex = posts.value.findIndex((post) => post.id === postId)
 
     posts.value.splice(postIndex, 1)
