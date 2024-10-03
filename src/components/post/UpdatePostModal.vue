@@ -2,20 +2,20 @@
 import { ref } from 'vue'
 import { usePostStore } from '@/stores/post'
 import type { IPost, IPostBody } from '@/types/post'
-
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import * as z from 'zod'
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose
+  DialogTrigger
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 
 interface IUpdatePostModalProps {
   post: IPost
@@ -24,21 +24,45 @@ interface IUpdatePostModalProps {
 const { post } = defineProps<IUpdatePostModalProps>()
 const { updatePost } = usePostStore()
 
-const title = ref(post.title)
-const description = ref(post.description)
+const isOpen = ref(false)
 
-function update() {
+// const title = ref(post.title)
+// const description = ref(post.description)
+
+// function update() {
+//   const updatedPost: IPostBody = {
+//     title: title.value,
+//     description: description.value
+//   }
+
+//   updatePost(updatedPost, post.id)
+// }
+
+const formSchema = toTypedSchema(
+  z.object({
+    title: z.string().min(1).max(12).default(post.title),
+    description: z.string().min(1).max(50).default(post.description)
+  })
+)
+
+const { handleSubmit } = useForm({
+  validationSchema: formSchema
+})
+
+const onSubmit = handleSubmit((values: IPostBody) => {
   const updatedPost: IPostBody = {
-    title: title.value,
-    description: description.value
+    title: values.title,
+    description: values.description
   }
 
   updatePost(updatedPost, post.id)
-}
+
+  isOpen.value = false
+})
 </script>
 
 <template>
-  <Dialog>
+  <Dialog v-model:open="isOpen">
     <DialogTrigger as-child>
       <Button variant="secondary">Edit</Button>
     </DialogTrigger>
@@ -47,19 +71,32 @@ function update() {
         <DialogTitle>Update Post</DialogTitle>
       </DialogHeader>
 
-      <div class="flex flex-col gap-8">
-        <div class="my-2">
-          <Label for="title" class="text-right"> Title </Label>
-          <Input id="title" v-model="title" />
-        </div>
-        <Textarea placeholder="Type your message here." v-model="description" />
-      </div>
+      <form class="w-2/3 space-y-6" @submit="onSubmit">
+        <FormField v-slot="{ componentField }" name="title">
+          <FormItem>
+            <FormLabel>Title</FormLabel>
+            <FormControl>
+              <Input type="text" placeholder="Post title" v-bind="componentField" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+        <FormField v-slot="{ componentField }" name="description">
+          <FormItem>
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Tell us a little description about your post"
+                class="resize-none"
+                v-bind="componentField"
+              />
+            </FormControl>
 
-      <DialogFooter>
-        <DialogClose as-child>
-          <Button type="button" variant="secondary" @click="update"> Update </Button>
-        </DialogClose>
-      </DialogFooter>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+        <Button type="submit"> Submit </Button>
+      </form>
     </DialogContent>
   </Dialog>
 </template>

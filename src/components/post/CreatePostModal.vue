@@ -2,41 +2,50 @@
 import { ref } from 'vue'
 import { usePostStore } from '@/stores/post'
 import type { IPostBody } from '@/types/post'
-
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import * as z from 'zod'
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose
+  DialogTrigger
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 
 const { createPost } = usePostStore()
 
-const title = ref('')
-const description = ref('')
+const isOpen = ref(false)
 
-function createNewPost() {
+const formSchema = toTypedSchema(
+  z.object({
+    title: z.string().min(2).max(12),
+    description: z.string().min(2).max(50)
+  })
+)
+
+const { handleSubmit } = useForm({
+  validationSchema: formSchema
+})
+
+const onSubmit = handleSubmit((values: IPostBody) => {
   const newPost: IPostBody = {
-    title: title.value,
-    description: description.value
+    title: values.title,
+    description: values.description
   }
 
   createPost(newPost)
 
-  title.value = ''
-  description.value = ''
-}
+  isOpen.value = false
+})
 </script>
 
 <template>
-  <Dialog>
+  <Dialog v-model:open="isOpen">
     <DialogTrigger as-child>
       <Button>Create Post</Button>
     </DialogTrigger>
@@ -45,19 +54,32 @@ function createNewPost() {
         <DialogTitle>Create Post</DialogTitle>
       </DialogHeader>
 
-      <div class="flex flex-col gap-8">
-        <div class="my-2">
-          <Label for="title" class="text-right"> Title </Label>
-          <Input id="title" v-model="title" />
-        </div>
-        <Textarea placeholder="Type your message here." v-model="description" />
-      </div>
+      <form class="w-2/3 space-y-6" @submit="onSubmit">
+        <FormField v-slot="{ componentField }" name="title">
+          <FormItem>
+            <FormLabel>Title</FormLabel>
+            <FormControl>
+              <Input type="text" placeholder="Post title" v-bind="componentField" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+        <FormField v-slot="{ componentField }" name="description">
+          <FormItem>
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Tell us a little description about your post"
+                class="resize-none"
+                v-bind="componentField"
+              />
+            </FormControl>
 
-      <DialogFooter>
-        <DialogClose as-child>
-          <Button type="button" variant="secondary" @click="createNewPost"> Create </Button>
-        </DialogClose>
-      </DialogFooter>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+        <Button type="submit"> Submit </Button>
+      </form>
     </DialogContent>
   </Dialog>
 </template>
